@@ -1,0 +1,33 @@
+version: '3.9'
+
+# Development override - use with:
+# docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  mongodb:
+    ports:
+      - "27017:27017"
+
+  backend:
+    build:
+      target: builder
+    command: npm run dev
+    environment:
+      NODE_ENV: development
+      MONGO_URI: mongodb://admin:password@mongodb:27017/expense-tracker?authSource=admin
+    volumes:
+      - ./backend/src:/app/src:ro
+    ports:
+      - "5000:5000"
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: npm run dev -- --host
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5000/api
